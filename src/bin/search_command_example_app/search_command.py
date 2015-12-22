@@ -1,4 +1,10 @@
 """
+This class provides a base class for search commands that handles much of the Splunk-to-Python interaction necessary for making a search command.
+
+See below for a basic example of a class that sub-classes SearchCommand:
+
+
+
 from search_command import SearchCommand
 import sys
 
