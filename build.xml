@@ -1,4 +1,4 @@
-<project default="package" name="splunk_search_command_example">
+<project default="package" name="search_command_example">
 
     <!--
     Load the properties files, local is loaded first since properties are immutable (cannot be changed
@@ -10,7 +10,7 @@
     <!-- Set up some basic parameters -->
     <property name="value.src.directory" value="src" />
     <property name="value.temp.directory" value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
-    <property name="value.build.appname" value="search_command_example" />
+    <property name="value.build.appname" value="${ant.project.name}" />
     
     <!-- Set up the ant classpath -->
     <path id="ant.classpath">
