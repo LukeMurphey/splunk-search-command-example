@@ -40,7 +40,15 @@ class SearchCommand(object):
     
     VALID_PARAMS = [ PARAM_RUN_IN_PREVIEW, PARAM_DEBUG ]
     
-    def __init__(self, run_in_preview=False, logger_name='python_search_command'):
+    def __init__(self, run_in_preview=False, logger_name='python_search_command', log_level=logging.INFO ):
+        """
+        Constructs an instance of the search command.
+        
+        Arguments:
+        run_in_preview -- Indicates whether the search command should run in preview mode
+        logger_name -- The logger name to append to the logger
+        """
+        
         self.run_in_preview = False
         
         # Check and save the logger name
@@ -50,7 +58,7 @@ class SearchCommand(object):
             raise Exception("Logger name cannot be empty")
         
         self.logger_name = logger_name
-        
+        self.log_level = log_level
         # self.logger.info("args" + str(args))
     
     @property
@@ -62,7 +70,7 @@ class SearchCommand(object):
         
         logger = logging.getLogger(self.logger_name)
         logger.propagate = False # Prevent the log messages from being duplicated in the python.log file
-        logger.setLevel(logging.INFO)
+        logger.setLevel(self.log_level)
         
         file_handler = handlers.RotatingFileHandler(make_splunkhome_path(['var', 'log', 'splunk', self.logger_name + '.log']), maxBytes=25000000, backupCount=5)
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
@@ -199,7 +207,7 @@ class SearchCommand(object):
         Output results to Splunk.
         
         Arguments:
-        results -- A dictionary of fields/values to send to Splunk.
+        results -- An array of dictionaries of fields/values to send to Splunk.
         """
         
         splunk.Intersplunk.outputResults(results)

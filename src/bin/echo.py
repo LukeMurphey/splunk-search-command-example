@@ -10,7 +10,7 @@ class Echo(SearchCommand):
         # Initialize the class
         SearchCommand.__init__( self, run_in_preview=True, logger_name='echo_search_command')
     
-    def handle_results(self, results, in_preview, session_key):
+    def handle_results(self, results, session_key, in_preview):
         self.output_results([{'echo' : self.what_to_echo}])
         
 if __name__ == '__main__':
