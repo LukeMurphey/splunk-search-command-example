@@ -25,10 +25,8 @@ if __name__ == '__main__':
 
 import splunk.Intersplunk
 import sys
-import os
 import logging
 from logging import handlers
-from splunk import SplunkdConnectionException
 
 from splunk.appserver.mrsparkle.lib.util import make_splunkhome_path
 
