@@ -126,7 +126,7 @@ Finally, register your search command by adding it to commands.conf. Create the 
 
 ## FAQs
 
-# How do I consume search results in a search command?
+### How do I consume search results in a search command?
 
 You will need to do two things if you need your search command to process results within SPL.
 
