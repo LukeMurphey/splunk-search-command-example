@@ -141,3 +141,13 @@ Second, you will need to update handle_results() to do something with the result
                     result['source_length'] = len(result['source'])
             
             self.output_results(results)
+
+### How do I get a session key so that my seacrh command can access Splunk's REST API?
+
+You will need to update your commands.conf entry to tell Splunk to pass a session key to your search command by setting "passauth" to true. Something like this:
+
+    [echo]
+    filename = echo.py
+    passauth = false
+    
+Once you do that, the session_key field that is passed to handle_results() will be a valid session key.
