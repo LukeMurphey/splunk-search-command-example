@@ -55,3 +55,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# VScode
+tasks.json
+
+# Custom build script stuff
+local.properties
