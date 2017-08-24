@@ -1,3 +1,10 @@
 <project default="package" name="search_command_example">
 	<import file="basebuild.xml"/>
+
+    <!-- ================================= 
+          target: splunk.refresh
+         ================================= -->
+    <target name="splunk.refresh" description="Refresh Splunk" depends="verify_splunk_home,define_reload_conf_macro">
+    	<reload_conf endpoint="commandsconf" />
+    </target>
 </project>
