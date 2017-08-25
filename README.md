@@ -48,7 +48,7 @@ Create an new class that inherits from the SearchCommand class and calls the con
 
 Modify the constructor to take whatever arguments you want it to take. In this case, I want the search command to take an argument "what_to_echo"; the constructor now takes the argument and stores it:
 
-    from search_command_example_app.search_command import SearchCommand
+    from search_command import SearchCommand
     import sys
 
     class Echo(SearchCommand):
@@ -115,6 +115,8 @@ Finally, add the code to cause the search command to execute at the bottom of th
 
 ## Step 3: Register your custom search command in commands.conf
 
+### 3.1: Create the commands.conf entry
+
 Finally, register your search command by adding it to commands.conf. Create the file "default/commands.conf" in your app. The stanza name should match the name of the command as it will appear in Splunk; "filename" must match the filename of the search command in the bin directory:
 
     [echo]
@@ -123,6 +125,26 @@ Finally, register your search command by adding it to commands.conf. Create the 
     passauth = false
 
 "generating" is set to true since this search command doesn't accept Splunk results but rather creates new results. "passauth" is set to false because this search command doesn't need to have access to splunkd.
+
+### 3.2: Reload the commands.conf file
+
+Splunk won't recognize your new commands.conf entry until you restart or you specifically tell Splunk to reload the conf files.
+
+You can force Splunk to reload your commands.conf entry by vanigating to the followuing URL in your browser and clicking "refresh":
+
+    http://127.0.0.1:8000/en-US/debug/refresh?entity=admin/commandsconf
+
+You don't need to call this endpoint everytime you edit the search command Python, just when you edit the commands.conf file. The Python code will get picked up automatically.
+
+## Step 4: Run the command
+
+Now that Splunk recognizes your command, you can run it from the search bar. Run the search by entering this in the search bar:
+
+    | echo what_to_echo="This works!"
+
+Make sure not to include spaces between the argument. Running a search like this will not work correctly:
+
+    | echo what_to_echo = "This works!"
 
 ## FAQs
 
