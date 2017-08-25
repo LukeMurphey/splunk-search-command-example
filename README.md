@@ -144,7 +144,7 @@ Now that Splunk recognizes your command, you can run it from the search bar. Run
 
 Make sure not to include spaces between the argument. Running a search like this will not work correctly:
 
-    | echo what_to_echo = "This works!"
+    | echo what_to_echo = "This won't work"
 
 ## FAQs
 
