@@ -39,6 +39,8 @@ if __name__ == '__main__':
 
 import splunk.Intersplunk
 import sys
+import csv
+import string
 import logging
 from logging import handlers
 
@@ -78,6 +80,8 @@ class SearchCommand(object):
         self.logger_name = logger_name
         self.log_level = log_level
         # self.logger.info("args" + str(args))
+
+        self.writer = None
 
     @property
     def logger(self):
@@ -241,6 +245,51 @@ class SearchCommand(object):
         """
 
         splunk.Intersplunk.outputResults(results)
+
+    def output_results_streaming(self, results, fields=None, mvdelim='\n'):
+        """
+        Output results to Splunk.
+
+        Arguments:
+        results -- An array of dictionaries of fields/values to send to Splunk.
+        """
+
+        outputfile = sys.stdout
+
+        if self.writer is None:
+            splunk.Intersplunk.set_binary_mode(outputfile)
+
+        if results == None:
+            return
+
+        s = set()
+        l = []
+
+        '''
+        Check each entry to see if it is a list (multivalued). If so, set
+        the multivalued key to the proper encoding Replace the list with a
+        newline separated string of the values
+        '''
+        for i in range(len(results)):
+            for key in results[i].keys():
+                if(isinstance(results[i][key], list)):
+                    results[i]['__mv_' + key] = splunk.Intersplunk.getEncodedMV(results[i][key])
+                    results[i][key] = string.join(results[i][key], mvdelim)
+            for k in results[i].keys():
+                if not k in s:
+                    s.add(k)
+                    l.append(k)
+
+        if fields is None:
+            h = l
+        else:
+            h = fields
+
+        if self.writer is None:
+            self.writer = csv.DictWriter(outputfile, h, extrasaction='ignore')
+            self.writer.writerow(dict(zip(h, h)))
+
+        self.writer.writerows(results)
 
     def handle_results(self, results, session_key, in_preview):
         """
