@@ -39,6 +39,8 @@ if __name__ == '__main__':
 
 import splunk.Intersplunk
 import sys
+import splunk
+import json
 import logging
 from logging import handlers
 
@@ -77,7 +79,9 @@ class SearchCommand(object):
 
         self.logger_name = logger_name
         self.log_level = log_level
-        # self.logger.info("args" + str(args))
+        
+        # The session key will be cached here once the search command is called
+        self.session_key = None
 
     @property
     def logger(self):
@@ -107,6 +111,84 @@ class SearchCommand(object):
     @logger.setter
     def logger(self, logger):
         self._logger = logger
+
+    def has_capability(self, capability):
+        """
+        Determine if the user has the given capability. This will return true if any of the
+        following are true:
+
+          1) The user has the given capability
+          2) The user has 'admin_all_objects'
+          3) The Splunk install is using the free license
+        """
+
+        try:
+            capabilities = self.get_capabilities()
+
+            if capability in capabilities or 'admin_all_objects' in capabilities:
+                return True
+
+        except splunk.LicenseRestriction:
+            # This can happen when the Splunk install is using the free license
+
+            # Check to see if the Splunk install is using the free license and allow access if so
+            # We are only going to check for this if it is the admin user since that is the user
+            # that the non-authenticated user is logged in as when the free license is used.
+            if self.is_using_free_licence():
+                return True
+
+            return False
+
+        return False
+
+    def get_capabilities(self):
+        """
+        Get the users' assigned capabilities.
+        """
+        return self.get_user_context().get('capabilities', None)
+
+    def get_user_context(self):
+        """
+        Get the users' context.
+        """
+
+        response, content = splunk.rest.simpleRequest('/services/authentication/current-context?output_mode=json',
+                                                      sessionKey=self.session_key)
+
+        if response.status == 200:
+
+            # Parse the JSON content
+            user_info = json.loads(content)
+
+            return user_info['entry'][0]['content']
+
+        return None
+
+    def is_using_free_licence(self):
+        """
+        Determine if the Splunk install is using the free license
+        """
+
+        # See the free license is active
+        response, content = splunk.rest.simpleRequest('/services/licenser/groups/Free?output_mode=json',
+                                                      sessionKey=self.session_key)
+
+        # If the response didn't return a 200 code, then the entry likely didn't exist and
+        # the host is not using the free license
+        if response.status == 200:
+
+            # Parse the JSON content
+            self.logger.warn(content)
+            license_info = json.loads(content)
+
+            if license_info['entry'][0]['content']['is_active'] == 1:
+                # This host is using the free license, allow this through
+                return True
+            
+            # Apparently the free licence is not in use
+            return False
+
+        return False
 
     @classmethod
     def parse_argument(cls, argument):
@@ -197,7 +279,7 @@ class SearchCommand(object):
             # Get the results from Splunk (unless results were provided)
             if results is None:
                 results, dummyresults, settings = splunk.Intersplunk.getOrganizedResults()
-                session_key = settings.get('sessionKey', None)
+                self.session_key = settings.get('sessionKey', None)
 
                 # Don't write out the events in preview mode
                 in_preview = settings.get('preview', '0') in [1, '1']
@@ -226,7 +308,7 @@ class SearchCommand(object):
                 settings = None
 
             # Execute the search command
-            self.handle_results(results, session_key, in_preview)
+            self.handle_results(results, self.session_key, in_preview)
 
         except Exception as exception:
             splunk.Intersplunk.parseError(str(exception))
