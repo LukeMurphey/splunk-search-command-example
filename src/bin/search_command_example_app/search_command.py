@@ -178,7 +178,6 @@ class SearchCommand(object):
         if response.status == 200:
 
             # Parse the JSON content
-            self.logger.warn(content)
             license_info = json.loads(content)
 
             if license_info['entry'][0]['content']['is_active'] == 1:
